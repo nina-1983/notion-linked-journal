@@ -17,21 +17,30 @@ const days = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", 
 export async function POST(request) {
   try {
     if (!process.env.NOTION_TOKEN || !DAILY_DB_ID) {
-      return NextResponse.json({ error: "Missing Notion environment variables." }, { status: 500 });
+      return NextResponse.json(
+        { error: "Missing Notion environment variables." },
+        { status: 500 }
+      );
     }
 
     const body = await request.json();
     const entryDate = body.date ? new Date(`${body.date}T12:00:00`) : new Date();
 
     const properties = {
-      Name: title(body.name || `Journal — ${entryDate.toLocaleDateString("en-GB")}`),
+      Name: title(
+        body.name ||
+          `${body.entryType || "Journal"} — ${entryDate.toLocaleDateString("en-GB")}`
+      ),
       Date: dateProp(body.date),
       Day: select(days[entryDate.getDay()]),
       Week: rich(getIsoWeekString(entryDate)),
       Month: select(entryDate.toLocaleString("en-GB", { month: "long" })),
+
       Mood: select(body.mood),
+      "Entry Type": select(body.entryType),
       "Energy Level": numberProp(body.energyLevel),
       "Nervous System State": select(body.nervousSystemState),
+
       "Emotional Themes": multiSelect(body.emotionalThemes),
       "Pattern Tags": multiSelect(body.patternTags),
       "Root Cause Tags": multiSelect(body.rootCauseTags),
@@ -62,9 +71,16 @@ export async function POST(request) {
       properties,
     });
 
-    return NextResponse.json({ ok: true, id: page.id, url: page.url });
+    return NextResponse.json({
+      ok: true,
+      id: page.id,
+      url: page.url,
+    });
   } catch (error) {
     console.error(error);
-    return NextResponse.json({ error: error.message || "Could not save journal entry." }, { status: 500 });
+    return NextResponse.json(
+      { error: error.message || "Could not save journal entry." },
+      { status: 500 }
+    );
   }
 }
