@@ -2,12 +2,11 @@
 
 import { useState } from "react";
 
-// ─── Helpers ──────────────────────────────────────────────────────────────────
 function todayIso() {
   return new Date().toISOString().slice(0, 10);
 }
 
-function getSessionType(): "morning" | "evening" | "saturday" | "sunday" {
+function getSessionType() {
   const day = new Date().getDay();
   if (day === 6) return "saturday";
   if (day === 0) return "sunday";
@@ -23,7 +22,6 @@ function formatDate() {
   });
 }
 
-// ─── Config ───────────────────────────────────────────────────────────────────
 const SESSION_CONFIG = {
   morning: {
     label: "Morning check-in",
@@ -69,16 +67,14 @@ const SESSION_CONFIG = {
 
 const MOODS = ["Calm", "Foggy", "Anxious", "Clear", "Tired", "Present", "Reactive", "Creative", "Heavy", "Grounded"];
 
-// ─── Sub-components ───────────────────────────────────────────────────────────
-function MicroLabel({ children }: { children: React.ReactNode }) {
+function MicroLabel({ children }) {
   return <span className="j-micro">{children}</span>;
 }
 
-function Card({ children, className = "" }: { children: React.ReactNode; className?: string }) {
+function Card({ children, className = "" }) {
   return <div className={`j-card ${className}`}>{children}</div>;
 }
 
-// ─── Page ─────────────────────────────────────────────────────────────────────
 export default function Home() {
   const sessionType = getSessionType();
   const config = SESSION_CONFIG[sessionType];
@@ -104,11 +100,11 @@ export default function Home() {
     carryForward: "",
   });
 
-  function update(field: string, value: string | number) {
+  function update(field, value) {
     setEntry((prev) => ({ ...prev, [field]: value }));
   }
 
-  function pickMood(mood: string) {
+  function pickMood(mood) {
     setSelectedMood(mood);
     update("mood", mood);
   }
@@ -129,7 +125,7 @@ export default function Home() {
     }
   }
 
-  const saveLabel: Record<string, string> = {
+  const saveLabel = {
     saving: "Saving…",
     saved: "Saved to Notion",
     error: "Something went wrong",
@@ -138,19 +134,16 @@ export default function Home() {
   return (
     <main className="j-wrap">
 
-      {/* Date bar */}
       <div className="j-datebar">
         <span className="j-date">{formatDate()}</span>
       </div>
 
-      {/* Hero */}
       <header className="j-hero">
         <p className="j-eyebrow">{config.label}</p>
         <h1 className="j-title">{config.heading}</h1>
         <p className="j-sub">{config.sub}</p>
       </header>
 
-      {/* Mood + Energy */}
       <Card>
         <div className="j-card-head">
           <MicroLabel>Mood</MicroLabel>
@@ -180,7 +173,6 @@ export default function Home() {
         </div>
       </Card>
 
-      {/* Reflection prompts */}
       <Card>
         <div className="j-prompts">
           {config.prompts.map(({ field, label, placeholder }) => (
@@ -189,7 +181,7 @@ export default function Home() {
               <textarea
                 className="j-textarea"
                 placeholder={placeholder}
-                value={(entry as Record<string, string | number>)[field] as string}
+                value={entry[field]}
                 onChange={(e) => update(field, e.target.value)}
               />
             </div>
@@ -197,7 +189,6 @@ export default function Home() {
         </div>
       </Card>
 
-      {/* Save */}
       <div className="j-save-row">
         {message && (
           <span className={`j-message ${message === "error" ? "j-message-error" : ""}`}>
