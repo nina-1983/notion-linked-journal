@@ -1,4 +1,3 @@
-```jsx
 "use client";
 
 import { useState } from "react";
@@ -7,7 +6,9 @@ const moods = ["Calm", "Clear", "Heavy", "Foggy", "Tender", "Grounded"];
 const states = ["Regulated", "Activated", "Dysregulated", "Foggy", "Overdriven"];
 const supports = ["walk", "protein breakfast", "silence", "movement", "journaling"];
 
-const today = new Date().toISOString().slice(0, 10);
+function todayIso() {
+  return new Date().toISOString().slice(0, 10);
+}
 
 function PillGroup({ options, value, onChange }) {
   return (
@@ -57,7 +58,7 @@ export default function Home() {
 
   const [morning, setMorning] = useState({
     entryType: "Morning",
-    date: today,
+    date: todayIso(),
     mood: "",
     nervousSystemState: "",
     energyLevel: 5,
@@ -69,7 +70,7 @@ export default function Home() {
 
   const [evening, setEvening] = useState({
     entryType: "Evening",
-    date: today,
+    date: todayIso(),
     mood: "",
     nervousSystemState: "",
     energyLevel: 5,
@@ -106,24 +107,18 @@ export default function Home() {
       </section>
 
       <nav className="tabs">
-        <button
-          className={tab === "morning" ? "active" : ""}
-          onClick={() => setTab("morning")}
-        >
+        <button className={tab === "morning" ? "active" : ""} onClick={() => setTab("morning")}>
           Morning
         </button>
 
-        <button
-          className={tab === "evening" ? "active" : ""}
-          onClick={() => setTab("evening")}
-        >
+        <button className={tab === "evening" ? "active" : ""} onClick={() => setTab("evening")}>
           Evening
         </button>
       </nav>
 
-      {message && <div className="notice">{message}</div>}
+      {message ? <div className="notice">{message}</div> : null}
 
-      {tab === "morning" && (
+      {tab === "morning" ? (
         <section className="panel">
           <h2>Morning check-in</h2>
 
@@ -132,9 +127,7 @@ export default function Home() {
             <PillGroup
               options={moods}
               value={morning.mood}
-              onChange={(v) =>
-                setMorning({ ...morning, mood: v })
-              }
+              onChange={(v) => setMorning({ ...morning, mood: v })}
             />
           </label>
 
@@ -143,28 +136,18 @@ export default function Home() {
             <PillGroup
               options={states}
               value={morning.nervousSystemState}
-              onChange={(v) =>
-                setMorning({
-                  ...morning,
-                  nervousSystemState: v,
-                })
-              }
+              onChange={(v) => setMorning({ ...morning, nervousSystemState: v })}
             />
           </label>
 
           <label>
-            <span>Energy</span>
+            <span>Energy: {morning.energyLevel}/10</span>
             <input
               type="range"
               min="1"
               max="10"
               value={morning.energyLevel}
-              onChange={(e) =>
-                setMorning({
-                  ...morning,
-                  energyLevel: e.target.value,
-                })
-              }
+              onChange={(e) => setMorning({ ...morning, energyLevel: e.target.value })}
             />
           </label>
 
@@ -172,12 +155,7 @@ export default function Home() {
             <span>What’s circling?</span>
             <textarea
               value={morning.openLoops}
-              onChange={(e) =>
-                setMorning({
-                  ...morning,
-                  openLoops: e.target.value,
-                })
-              }
+              onChange={(e) => setMorning({ ...morning, openLoops: e.target.value })}
             />
           </label>
 
@@ -185,12 +163,7 @@ export default function Home() {
             <span>What do I need today?</span>
             <textarea
               value={morning.emotionalReflection}
-              onChange={(e) =>
-                setMorning({
-                  ...morning,
-                  emotionalReflection: e.target.value,
-                })
-              }
+              onChange={(e) => setMorning({ ...morning, emotionalReflection: e.target.value })}
             />
           </label>
 
@@ -199,25 +172,15 @@ export default function Home() {
             <MultiPills
               options={supports}
               values={morning.whatHelped}
-              onChange={(v) =>
-                setMorning({
-                  ...morning,
-                  whatHelped: v,
-                })
-              }
+              onChange={(v) => setMorning({ ...morning, whatHelped: v })}
             />
           </label>
 
-          <button
-            className="save"
-            onClick={() => saveEntry(morning)}
-          >
+          <button className="save" onClick={() => saveEntry(morning)}>
             Save morning to Notion
           </button>
         </section>
-      )}
-
-      {tab === "evening" && (
+      ) : (
         <section className="panel">
           <h2>Evening reflection</h2>
 
@@ -226,9 +189,7 @@ export default function Home() {
             <PillGroup
               options={moods}
               value={evening.mood}
-              onChange={(v) =>
-                setEvening({ ...evening, mood: v })
-              }
+              onChange={(v) => setEvening({ ...evening, mood: v })}
             />
           </label>
 
@@ -237,12 +198,18 @@ export default function Home() {
             <PillGroup
               options={states}
               value={evening.nervousSystemState}
-              onChange={(v) =>
-                setEvening({
-                  ...evening,
-                  nervousSystemState: v,
-                })
-              }
+              onChange={(v) => setEvening({ ...evening, nervousSystemState: v })}
+            />
+          </label>
+
+          <label>
+            <span>Energy: {evening.energyLevel}/10</span>
+            <input
+              type="range"
+              min="1"
+              max="10"
+              value={evening.energyLevel}
+              onChange={(e) => setEvening({ ...evening, energyLevel: e.target.value })}
             />
           </label>
 
@@ -250,12 +217,7 @@ export default function Home() {
             <span>What worked?</span>
             <textarea
               value={evening.whatWorked}
-              onChange={(e) =>
-                setEvening({
-                  ...evening,
-                  whatWorked: e.target.value,
-                })
-              }
+              onChange={(e) => setEvening({ ...evening, whatWorked: e.target.value })}
             />
           </label>
 
@@ -263,12 +225,7 @@ export default function Home() {
             <span>What felt heavy?</span>
             <textarea
               value={evening.whatFeltHeavy}
-              onChange={(e) =>
-                setEvening({
-                  ...evening,
-                  whatFeltHeavy: e.target.value,
-                })
-              }
+              onChange={(e) => setEvening({ ...evening, whatFeltHeavy: e.target.value })}
             />
           </label>
 
@@ -276,12 +233,7 @@ export default function Home() {
             <span>What needs carrying forward?</span>
             <textarea
               value={evening.carryForward}
-              onChange={(e) =>
-                setEvening({
-                  ...evening,
-                  carryForward: e.target.value,
-                })
-              }
+              onChange={(e) => setEvening({ ...evening, carryForward: e.target.value })}
             />
           </label>
 
@@ -290,19 +242,11 @@ export default function Home() {
             <MultiPills
               options={supports}
               values={evening.whatHelped}
-              onChange={(v) =>
-                setEvening({
-                  ...evening,
-                  whatHelped: v,
-                })
-              }
+              onChange={(v) => setEvening({ ...evening, whatHelped: v })}
             />
           </label>
 
-          <button
-            className="save"
-            onClick={() => saveEntry(evening)}
-          >
+          <button className="save" onClick={() => saveEntry(evening)}>
             Save evening to Notion
           </button>
         </section>
@@ -310,4 +254,3 @@ export default function Home() {
     </main>
   );
 }
-```
