@@ -2,255 +2,245 @@
 
 /* ─── Tokens ─────────────────────────────────────────────────────────────── */
 :root {
-  --j-bg:       #faf8f4;
-  --j-text:     #2d2a25;
-  --j-muted:    #9e9588;
-  --j-hairline: #e4dfd6;
-  --j-accent:   #8b7355;
-  --j-soft:     #c2b49a;
-  --j-sans:     'DM Sans', 'Helvetica Neue', sans-serif;
-  --j-serif:    'Cormorant Garamond', Georgia, serif;
-}
-
-@media (prefers-color-scheme: dark) {
-  :root {
-    --j-bg:       #1b1914;
-    --j-text:     #ece6dc;
-    --j-muted:    #6e6860;
-    --j-hairline: #322e28;
-    --j-accent:   #c4a97e;
-    --j-soft:     #7a6e5c;
-  }
+  --bg:       #edeae3;
+  --paper:    #f5f2eb;
+  --ink:      #2d2a23;
+  --muted:    #8a8278;
+  --line:     rgba(60, 54, 42, 0.12);
+  --sage:     #7f9277;
+  --sage-dk:  #5f7258;
+  --sage-lt:  #dfe7d6;
+  --cream:    #faf7f0;
+  --shadow:   0 2px 12px rgba(60, 50, 35, 0.07);
+  --sans:     'DM Sans', system-ui, sans-serif;
+  --serif:    'Cormorant Garamond', Georgia, serif;
 }
 
 /* ─── Reset ──────────────────────────────────────────────────────────────── */
-*, *::before, *::after {
-  box-sizing: border-box;
-  margin: 0;
-  padding: 0;
-}
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
 html, body {
-  background: var(--j-bg);
-  color: var(--j-text);
-  font-family: var(--j-sans);
+  background: var(--bg);
+  color: var(--ink);
+  font-family: var(--sans);
   -webkit-font-smoothing: antialiased;
 }
 
-button, input, textarea {
-  font: inherit;
-  color: inherit;
-}
+button, input, textarea { font: inherit; color: inherit; }
 
 /* ─── Layout ─────────────────────────────────────────────────────────────── */
 .j-wrap {
-  min-height: 100dvh;
-  max-width: 580px;
+  width: min(680px, calc(100% - 28px));
   margin: 0 auto;
-  padding: clamp(2.5rem, 8vw, 5rem) clamp(1.5rem, 6vw, 2.5rem) 5rem;
-}
-
-/* ─── Header ─────────────────────────────────────────────────────────────── */
-.j-header {
-  margin-bottom: 2.5rem;
-}
-
-.j-pulse-row {
+  padding: 28px 0 80px;
   display: flex;
-  align-items: center;
-  gap: 0.5rem;
-  margin-bottom: 1.1rem;
+  flex-direction: column;
+  gap: 12px;
 }
 
-.j-dot {
-  width: 6px;
-  height: 6px;
-  border-radius: 50%;
-  background: var(--j-accent);
-  display: inline-block;
-  animation: j-pulse 2.8s ease-in-out infinite;
-  flex-shrink: 0;
+/* ─── Date bar ───────────────────────────────────────────────────────────── */
+.j-datebar {
+  padding: 0 4px 4px;
 }
 
-@keyframes j-pulse {
-  0%, 100% { opacity: 0.25; transform: scale(1); }
-  50%       { opacity: 1;    transform: scale(1.5); }
-}
-
-.j-session-label {
-  font-size: 0.68rem;
-  letter-spacing: 0.12em;
+.j-date {
+  font-size: 0.7rem;
+  letter-spacing: 0.1em;
   text-transform: uppercase;
-  color: var(--j-muted);
-  font-weight: 400;
+  color: var(--sage-dk);
+  font-weight: 500;
+}
+
+/* ─── Hero ───────────────────────────────────────────────────────────────── */
+.j-hero {
+  background: var(--paper);
+  border: 1px solid var(--line);
+  border-radius: 20px;
+  padding: clamp(20px, 4vw, 32px);
+  box-shadow: var(--shadow);
+}
+
+.j-eyebrow {
+  font-size: 0.68rem;
+  letter-spacing: 0.13em;
+  text-transform: uppercase;
+  color: var(--sage-dk);
+  font-weight: 500;
+  margin-bottom: 8px;
 }
 
 .j-title {
-  font-family: var(--j-serif);
-  font-size: clamp(1.9rem, 6vw, 2.6rem);
+  font-family: var(--serif);
+  font-size: clamp(2rem, 6vw, 3rem);
   font-weight: 400;
-  line-height: 1.2;
-  color: var(--j-text);
-  margin-bottom: 0.4rem;
+  line-height: 1.1;
+  color: var(--ink);
+  margin-bottom: 10px;
 }
 
-.j-dateline {
-  font-size: 0.78rem;
-  color: var(--j-muted);
-  font-weight: 300;
-  letter-spacing: 0.02em;
+.j-sub {
+  font-size: 0.88rem;
+  color: var(--muted);
+  line-height: 1.6;
+  font-style: italic;
 }
 
-/* ─── Divider ────────────────────────────────────────────────────────────── */
-.j-rule {
-  width: 2rem;
-  height: 1px;
-  background: var(--j-hairline);
-  margin-bottom: 2.5rem;
+/* ─── Cards ──────────────────────────────────────────────────────────────── */
+.j-card {
+  background: var(--paper);
+  border: 1px solid var(--line);
+  border-radius: 20px;
+  padding: clamp(18px, 4vw, 28px);
+  box-shadow: var(--shadow);
 }
 
-/* ─── Tab toggle ─────────────────────────────────────────────────────────── */
-.j-tabs {
-  display: flex;
-  gap: 0;
-  margin-bottom: 2.5rem;
-  border-bottom: 1px solid var(--j-hairline);
+.j-card-head {
+  margin-bottom: 14px;
 }
 
-.j-tab {
-  background: transparent;
-  border: none;
-  border-bottom: 2px solid transparent;
-  margin-bottom: -1px;
-  padding: 0.4rem 0;
-  margin-right: 2rem;
-  font-size: 0.75rem;
-  letter-spacing: 0.08em;
+/* ─── Micro label ────────────────────────────────────────────────────────── */
+.j-micro {
+  display: block;
+  font-size: 0.67rem;
+  letter-spacing: 0.1em;
   text-transform: uppercase;
-  color: var(--j-muted);
+  color: var(--muted);
+  font-weight: 500;
+  margin-bottom: 10px;
+}
+
+/* ─── Mood pills ─────────────────────────────────────────────────────────── */
+.j-mood-grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 7px;
+  margin-bottom: 22px;
+}
+
+.j-mood-pill {
+  background: var(--cream);
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  padding: 7px 13px;
+  font-size: 0.82rem;
+  color: var(--ink);
   cursor: pointer;
-  transition: color 0.25s ease, border-color 0.25s ease;
+  transition: background 0.15s ease, border-color 0.15s ease, color 0.15s ease;
 }
 
-.j-tab:hover {
-  color: var(--j-text);
+.j-mood-pill:hover {
+  background: var(--sage-lt);
+  border-color: rgba(95, 114, 88, 0.25);
 }
 
-.j-tab-active {
-  color: var(--j-accent);
-  border-bottom-color: var(--j-accent);
+.j-mood-active {
+  background: var(--sage-lt);
+  border-color: rgba(95, 114, 88, 0.35);
+  color: var(--sage-dk);
+  font-weight: 500;
 }
 
-/* ─── Form ───────────────────────────────────────────────────────────────── */
-.j-form {
+/* ─── Energy slider ──────────────────────────────────────────────────────── */
+.j-energy-row {
+  padding-top: 4px;
+}
+
+.j-range {
+  width: 100%;
+  accent-color: var(--sage);
+  margin-top: 6px;
+  cursor: pointer;
+}
+
+/* ─── Prompts ────────────────────────────────────────────────────────────── */
+.j-prompts {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+.j-prompt {
   display: flex;
   flex-direction: column;
 }
 
-.j-field {
-  margin-bottom: 2.25rem;
-}
-
-.j-label {
-  display: block;
-  font-size: 0.7rem;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
-  color: var(--j-muted);
-  margin-bottom: 0.55rem;
-  transition: color 0.25s ease;
-}
-
-.j-field:focus-within .j-label {
-  color: var(--j-accent);
-}
-
 .j-textarea {
   width: 100%;
-  background: transparent;
-  border: none;
-  border-bottom: 1px solid var(--j-hairline);
-  border-radius: 0;
+  background: var(--cream);
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  padding: 13px 15px;
+  font-size: 0.92rem;
+  line-height: 1.6;
+  color: var(--ink);
+  resize: vertical;
+  min-height: 88px;
   outline: none;
-  resize: none;
-  min-height: 80px;
-  font-family: var(--j-serif);
-  font-size: 1.08rem;
-  line-height: 1.75;
-  color: var(--j-text);
-  padding: 0.35rem 0 0.65rem;
-  transition: border-color 0.25s ease;
+  transition: border-color 0.2s ease;
+  margin-top: 2px;
 }
 
 .j-textarea:focus {
-  border-bottom-color: var(--j-accent);
+  border-color: rgba(95, 114, 88, 0.45);
 }
 
 .j-textarea::placeholder {
-  color: var(--j-soft);
+  color: var(--muted);
   font-style: italic;
 }
 
-/* ─── Range slider ───────────────────────────────────────────────────────── */
-.j-range {
-  width: 100%;
-  margin-top: 0.35rem;
-  accent-color: var(--j-accent);
-  cursor: pointer;
-}
-
-/* ─── Save footer ────────────────────────────────────────────────────────── */
-.j-footer {
-  margin-top: 2rem;
-  padding-top: 1.75rem;
-  border-top: 1px solid var(--j-hairline);
+/* ─── Save row ───────────────────────────────────────────────────────────── */
+.j-save-row {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 1rem;
-  min-height: 2.5rem;
+  gap: 12px;
+  padding: 4px 2px;
 }
 
 .j-message {
-  font-size: 0.75rem;
-  color: var(--j-accent);
-  letter-spacing: 0.04em;
-  opacity: 0.75;
+  font-size: 0.78rem;
+  color: var(--sage-dk);
+  letter-spacing: 0.03em;
 }
 
 .j-message-error {
-  color: #b87c6a;
+  color: #a0614e;
 }
 
 .j-save {
-  display: flex;
-  align-items: center;
-  gap: 0.6rem;
-  background: transparent;
+  background: var(--sage);
+  color: white;
   border: none;
-  padding: 0;
+  border-radius: 999px;
+  padding: 11px 22px;
+  font-size: 0.82rem;
+  font-weight: 500;
   cursor: pointer;
-  font-family: var(--j-sans);
-  font-size: 0.72rem;
-  letter-spacing: 0.1em;
-  text-transform: uppercase;
-  color: var(--j-accent);
-  transition: opacity 0.25s ease;
+  transition: background 0.15s ease, transform 0.1s ease;
   margin-left: auto;
 }
 
+.j-save:hover {
+  background: var(--sage-dk);
+  transform: translateY(-1px);
+}
+
 .j-save:disabled {
-  opacity: 0.4;
+  opacity: 0.5;
   cursor: default;
+  transform: none;
 }
 
-.j-save:not(:disabled):hover {
-  opacity: 0.7;
-}
+/* ─── Mobile ─────────────────────────────────────────────────────────────── */
+@media (max-width: 640px) {
+  .j-wrap {
+    width: calc(100% - 20px);
+    padding-top: 18px;
+  }
 
-.j-save-line {
-  display: inline-block;
-  width: 18px;
-  height: 1px;
-  background: currentColor;
+  .j-hero,
+  .j-card {
+    border-radius: 16px;
+  }
 }
