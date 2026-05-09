@@ -2,14 +2,16 @@
 
 import { useState } from "react";
 
-// ─── Helpers (unchanged) ──────────────────────────────────────────────────────
+// ─── Helpers ──────────────────────────────────────────────────────────────────
 function todayIso() {
   return new Date().toISOString().slice(0, 10);
 }
 
-function isWeekend() {
+function getSessionType(): "morning" | "evening" | "saturday" | "sunday" {
   const day = new Date().getDay();
-  return day === 0 || day === 6;
+  if (day === 6) return "saturday";
+  if (day === 0) return "sunday";
+  return new Date().getHours() < 14 ? "morning" : "evening";
 }
 
 function formatDate() {
@@ -17,30 +19,76 @@ function formatDate() {
     weekday: "long",
     day: "numeric",
     month: "long",
+    year: "numeric",
   });
 }
 
-const today = todayIso();
-const weekendMode = isWeekend();
+// ─── Config ───────────────────────────────────────────────────────────────────
+const SESSION_CONFIG = {
+  morning: {
+    label: "Morning check-in",
+    heading: "Good morning.",
+    sub: "A moment to arrive before the day begins.",
+    prompts: [
+      { field: "emotionalReflection", label: "How are you arriving today?", placeholder: "No need to dress it up…" },
+      { field: "whatFeltHeavy",       label: "What's sitting with you right now?", placeholder: "Whatever is present…" },
+      { field: "carryForward",        label: "What do you need most today?", placeholder: "One thing, held lightly…" },
+    ],
+  },
+  evening: {
+    label: "Evening reflection",
+    heading: "The day is closing.",
+    sub: "A gentle close before you rest.",
+    prompts: [
+      { field: "eveningReflection",   label: "How did today actually feel?", placeholder: "Honest is enough…" },
+      { field: "openLoops",           label: "What are you putting down before tomorrow?", placeholder: "Set it here, leave it here…" },
+      { field: "carryForward",        label: "What do you want to carry forward?", placeholder: "One thread worth keeping…" },
+    ],
+  },
+  saturday: {
+    label: "Saturday",
+    heading: "The week is behind you.",
+    sub: "Decompress. You don't have to figure anything out yet.",
+    prompts: [
+      { field: "emotionalReflection", label: "How are you arriving into the weekend?", placeholder: "Where are you landing…" },
+      { field: "nervousSystemState",  label: "What does your body need today?", placeholder: "Rest, movement, quiet, company…" },
+      { field: "whatFeltHeavy",       label: "What are you letting go of from the week?", placeholder: "Name it so you can set it down…" },
+    ],
+  },
+  sunday: {
+    label: "Sunday",
+    heading: "A slower morning.",
+    sub: "Space to restore and look gently ahead.",
+    prompts: [
+      { field: "eveningReflection",   label: "How are you feeling after the rest?", placeholder: "Whatever is true…" },
+      { field: "whatWorked",          label: "What restored you this weekend?", placeholder: "People, stillness, small pleasures…" },
+      { field: "carryForward",        label: "What do you want to carry into the new week?", placeholder: "A feeling, an intention, a word…" },
+    ],
+  },
+};
 
-// ─── Field wrapper ────────────────────────────────────────────────────────────
-function Field({ label, children }: { label: string; children: React.ReactNode }) {
-  return (
-    <div className="j-field">
-      <span className="j-label">{label}</span>
-      {children}
-    </div>
-  );
+const MOODS = ["Calm", "Foggy", "Anxious", "Clear", "Tired", "Present", "Reactive", "Creative", "Heavy", "Grounded"];
+
+// ─── Sub-components ───────────────────────────────────────────────────────────
+function MicroLabel({ children }: { children: React.ReactNode }) {
+  return <span className="j-micro">{children}</span>;
+}
+
+function Card({ children, className = "" }: { children: React.ReactNode; className?: string }) {
+  return <div className={`j-card ${className}`}>{children}</div>;
 }
 
 // ─── Page ─────────────────────────────────────────────────────────────────────
 export default function Home() {
-  const [mode, setMode] = useState("Morning");
+  const sessionType = getSessionType();
+  const config = SESSION_CONFIG[sessionType];
+
   const [message, setMessage] = useState("");
+  const [selectedMood, setSelectedMood] = useState("");
 
   const [entry, setEntry] = useState({
-    entryType: weekendMode ? "Weekend" : "Morning",
-    date: today,
+    entryType: sessionType,
+    date: todayIso(),
     mood: "",
     energyLevel: 5,
     nervousSystemState: "",
@@ -60,9 +108,9 @@ export default function Home() {
     setEntry((prev) => ({ ...prev, [field]: value }));
   }
 
-  function switchMode(nextMode: string) {
-    setMode(nextMode);
-    setEntry((prev) => ({ ...prev, entryType: nextMode }));
+  function pickMood(mood: string) {
+    setSelectedMood(mood);
+    update("mood", mood);
   }
 
   async function saveEntry() {
@@ -81,144 +129,90 @@ export default function Home() {
     }
   }
 
-  const messageText: Record<string, string> = {
+  const saveLabel: Record<string, string> = {
     saving: "Saving…",
     saved: "Saved to Notion",
     error: "Something went wrong",
   };
 
-  const sessionLabel = weekendMode
-    ? "Weekend reset"
-    : mode === "Morning"
-    ? "Morning check-in"
-    : "Evening reflection";
-
-  const heading = weekendMode
-    ? "A softer place to land."
-    : mode === "Morning"
-    ? "Good morning."
-    : "The day is winding down.";
-
   return (
     <main className="j-wrap">
 
-      {/* Header */}
-      <header className="j-header">
-        <div className="j-pulse-row">
-          <span className="j-dot" />
-          <span className="j-session-label">{sessionLabel}</span>
-        </div>
-        <h1 className="j-title">{heading}</h1>
-        <p className="j-dateline">{formatDate()}</p>
+      {/* Date bar */}
+      <div className="j-datebar">
+        <span className="j-date">{formatDate()}</span>
+      </div>
+
+      {/* Hero */}
+      <header className="j-hero">
+        <p className="j-eyebrow">{config.label}</p>
+        <h1 className="j-title">{config.heading}</h1>
+        <p className="j-sub">{config.sub}</p>
       </header>
 
-      <div className="j-rule" />
-
-      {/* Mode toggle — weekdays only */}
-      {!weekendMode && (
-        <nav className="j-tabs">
-          <button
-            className={`j-tab ${mode === "Morning" ? "j-tab-active" : ""}`}
-            onClick={() => switchMode("Morning")}
-          >
-            Morning
-          </button>
-          <button
-            className={`j-tab ${mode === "Evening" ? "j-tab-active" : ""}`}
-            onClick={() => switchMode("Evening")}
-          >
-            Evening
-          </button>
-        </nav>
-      )}
-
-      {/* Form */}
-      <section className="j-form">
-
-        {weekendMode && (
-          <>
-            <Field label="How do I actually feel today?">
-              <textarea className="j-textarea" value={entry.emotionalReflection} onChange={(e) => update("emotionalReflection", e.target.value)} placeholder="No performance required here…" />
-            </Field>
-            <Field label="What does my nervous system need this weekend?">
-              <textarea className="j-textarea" value={entry.nervousSystemState} onChange={(e) => update("nervousSystemState", e.target.value)} placeholder="Rest, quiet, movement, company…" />
-            </Field>
-            <Field label="What would make home feel calmer?">
-              <textarea className="j-textarea" value={entry.homeReflection} onChange={(e) => update("homeReflection", e.target.value)} placeholder="Something small is enough…" />
-            </Field>
-            <Field label="What feels emotionally unfinished?">
-              <textarea className="j-textarea" value={entry.openLoops} onChange={(e) => update("openLoops", e.target.value)} placeholder="What's still sitting with you…" />
-            </Field>
-            <Field label="What do I want less of next week?">
-              <textarea className="j-textarea" value={entry.whatFeltHeavy} onChange={(e) => update("whatFeltHeavy", e.target.value)} placeholder="Name it, then set it down…" />
-            </Field>
-            <Field label="What would support me properly this week?">
-              <textarea className="j-textarea" value={entry.carryForward} onChange={(e) => update("carryForward", e.target.value)} placeholder="An intention, a boundary, a softness…" />
-            </Field>
-          </>
-        )}
-
-        {!weekendMode && mode === "Morning" && (
-          <>
-            <Field label="How do I actually feel today?">
-              <textarea className="j-textarea" value={entry.emotionalReflection} onChange={(e) => update("emotionalReflection", e.target.value)} placeholder="Notice what's present, without needing to change it…" />
-            </Field>
-            <Field label="What feels heavy right now?">
-              <textarea className="j-textarea" value={entry.whatFeltHeavy} onChange={(e) => update("whatFeltHeavy", e.target.value)} placeholder="No need to fix it yet…" />
-            </Field>
-            <Field label="What feels supportive right now?">
-              <textarea className="j-textarea" value={entry.whatWorked} onChange={(e) => update("whatWorked", e.target.value)} placeholder="People, rhythms, small things…" />
-            </Field>
-            <Field label="What do I need most today?">
-              <textarea className="j-textarea" value={entry.carryForward} onChange={(e) => update("carryForward", e.target.value)} placeholder="One thing, held lightly…" />
-            </Field>
-            <Field label={`Energy today — ${entry.energyLevel} / 10`}>
-              <input
-                className="j-range"
-                type="range"
-                min="1"
-                max="10"
-                value={entry.energyLevel}
-                onChange={(e) => update("energyLevel", e.target.value)}
-              />
-            </Field>
-          </>
-        )}
-
-        {!weekendMode && mode === "Evening" && (
-          <>
-            <Field label="What worked today?">
-              <textarea className="j-textarea" value={entry.whatWorked} onChange={(e) => update("whatWorked", e.target.value)} placeholder="A moment, a win, a conversation…" />
-            </Field>
-            <Field label="What felt hard today?">
-              <textarea className="j-textarea" value={entry.whatFeltHeavy} onChange={(e) => update("whatFeltHeavy", e.target.value)} placeholder="Name it without judgment…" />
-            </Field>
-            <Field label="What drained me?">
-              <textarea className="j-textarea" value={entry.openLoops} onChange={(e) => update("openLoops", e.target.value)} placeholder="Energy leaks worth noticing…" />
-            </Field>
-            <Field label="What regulated me?">
-              <textarea className="j-textarea" value={entry.eveningReflection} onChange={(e) => update("eveningReflection", e.target.value)} placeholder="What brought you back to yourself…" />
-            </Field>
-            <Field label="What needs carrying forward?">
-              <textarea className="j-textarea" value={entry.carryForward} onChange={(e) => update("carryForward", e.target.value)} placeholder="One thread to hold…" />
-            </Field>
-          </>
-        )}
-
-        {/* Save footer */}
-        <div className="j-footer">
-          {message && (
-            <span className={`j-message ${message === "error" ? "j-message-error" : ""}`}>
-              {messageText[message]}
-            </span>
-          )}
-          <button className="j-save" onClick={saveEntry} disabled={message === "saving"}>
-            Save to Notion
-            <span className="j-save-line" />
-          </button>
+      {/* Mood + Energy */}
+      <Card>
+        <div className="j-card-head">
+          <MicroLabel>Mood</MicroLabel>
+        </div>
+        <div className="j-mood-grid">
+          {MOODS.map((mood) => (
+            <button
+              key={mood}
+              className={`j-mood-pill ${selectedMood === mood ? "j-mood-active" : ""}`}
+              onClick={() => pickMood(mood)}
+            >
+              {mood}
+            </button>
+          ))}
         </div>
 
-      </section>
+        <div className="j-energy-row">
+          <MicroLabel>Energy — {entry.energyLevel} / 10</MicroLabel>
+          <input
+            className="j-range"
+            type="range"
+            min="1"
+            max="10"
+            value={entry.energyLevel}
+            onChange={(e) => update("energyLevel", e.target.value)}
+          />
+        </div>
+      </Card>
+
+      {/* Reflection prompts */}
+      <Card>
+        <div className="j-prompts">
+          {config.prompts.map(({ field, label, placeholder }) => (
+            <div className="j-prompt" key={field}>
+              <MicroLabel>{label}</MicroLabel>
+              <textarea
+                className="j-textarea"
+                placeholder={placeholder}
+                value={(entry as Record<string, string | number>)[field] as string}
+                onChange={(e) => update(field, e.target.value)}
+              />
+            </div>
+          ))}
+        </div>
+      </Card>
+
+      {/* Save */}
+      <div className="j-save-row">
+        {message && (
+          <span className={`j-message ${message === "error" ? "j-message-error" : ""}`}>
+            {saveLabel[message]}
+          </span>
+        )}
+        <button
+          className="j-save"
+          onClick={saveEntry}
+          disabled={message === "saving"}
+        >
+          Save {config.label.toLowerCase()} to Notion
+        </button>
+      </div>
+
     </main>
   );
 }
