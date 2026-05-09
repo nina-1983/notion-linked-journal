@@ -8,9 +8,10 @@ function todayIso() {
 
 function getSessionType() {
   const day = new Date().getDay();
-  if (day === 6) return "saturday";
-  if (day === 0) return "sunday";
-  return new Date().getHours() < 14 ? "morning" : "evening";
+  const hour = new Date().getHours();
+  if (day === 6) return hour < 14 ? "saturday_morning" : "saturday_evening";
+  if (day === 0) return hour < 14 ? "sunday_morning" : "sunday_evening";
+  return hour < 14 ? "morning" : "evening";
 }
 
 function formatDate() {
@@ -28,9 +29,9 @@ const SESSION_CONFIG = {
     heading: "Good morning.",
     sub: "A moment to arrive before the day begins.",
     prompts: [
-      { field: "emotionalReflection", label: "How are you arriving today?", placeholder: "No need to dress it up…" },
-      { field: "whatFeltHeavy",       label: "What's sitting with you right now?", placeholder: "Whatever is present…" },
-      { field: "carryForward",        label: "What do you need most today?", placeholder: "One thing, held lightly…" },
+      { field: "emotionalReflection", label: "How are you arriving today?",          placeholder: "No need to dress it up…" },
+      { field: "whatFeltHeavy",        label: "What's sitting with you right now?",   placeholder: "Whatever is present…" },
+      { field: "carryForward",         label: "What do you need most today?",         placeholder: "One thing, held lightly…" },
     ],
   },
   evening: {
@@ -38,29 +39,49 @@ const SESSION_CONFIG = {
     heading: "The day is closing.",
     sub: "A gentle close before you rest.",
     prompts: [
-      { field: "eveningReflection",   label: "How did today actually feel?", placeholder: "Honest is enough…" },
-      { field: "openLoops",           label: "What are you putting down before tomorrow?", placeholder: "Set it here, leave it here…" },
-      { field: "carryForward",        label: "What do you want to carry forward?", placeholder: "One thread worth keeping…" },
+      { field: "eveningReflection",    label: "How did today actually feel?",                   placeholder: "Honest is enough…" },
+      { field: "openLoops",            label: "What are you putting down before tomorrow?",     placeholder: "Set it here, leave it here…" },
+      { field: "carryForward",         label: "What do you want to carry forward?",             placeholder: "One thread worth keeping…" },
     ],
   },
-  saturday: {
-    label: "Saturday",
+  saturday_morning: {
+    label: "Saturday morning",
     heading: "The week is behind you.",
     sub: "Decompress. You don't have to figure anything out yet.",
     prompts: [
-      { field: "emotionalReflection", label: "How are you arriving into the weekend?", placeholder: "Where are you landing…" },
-      { field: "nervousSystemState",  label: "What does your body need today?", placeholder: "Rest, movement, quiet, company…" },
+      { field: "emotionalReflection", label: "How are you arriving into the weekend?",  placeholder: "Where are you landing…" },
+      { field: "nervousSystemState",  label: "What does your body need today?",          placeholder: "Rest, movement, quiet, company…" },
       { field: "whatFeltHeavy",       label: "What are you letting go of from the week?", placeholder: "Name it so you can set it down…" },
     ],
   },
-  sunday: {
-    label: "Sunday",
+  saturday_evening: {
+    label: "Saturday evening",
+    heading: "Settling into the evening.",
+    sub: "No agenda. Just noticing.",
+    prompts: [
+      { field: "eveningReflection",   label: "How did today feel?",        placeholder: "Whatever comes up…" },
+      { field: "whatWorked",          label: "What did you enjoy today?",  placeholder: "Big or small…" },
+      { field: "carryForward",        label: "What do you need tonight?",  placeholder: "Rest, connection, quiet…" },
+    ],
+  },
+  sunday_morning: {
+    label: "Sunday morning",
     heading: "A slower morning.",
     sub: "Space to restore and look gently ahead.",
     prompts: [
-      { field: "eveningReflection",   label: "How are you feeling after the rest?", placeholder: "Whatever is true…" },
-      { field: "whatWorked",          label: "What restored you this weekend?", placeholder: "People, stillness, small pleasures…" },
+      { field: "emotionalReflection", label: "How are you feeling after the rest?",         placeholder: "Whatever is true…" },
+      { field: "whatWorked",          label: "What restored you this weekend?",              placeholder: "People, stillness, small pleasures…" },
       { field: "carryForward",        label: "What do you want to carry into the new week?", placeholder: "A feeling, an intention, a word…" },
+    ],
+  },
+  sunday_evening: {
+    label: "Sunday evening",
+    heading: "The weekend is closing.",
+    sub: "A quiet moment before the week begins.",
+    prompts: [
+      { field: "eveningReflection",   label: "What's your energy like heading into the week?", placeholder: "Honest is fine…" },
+      { field: "emotionalReflection", label: "What are you feeling about tomorrow?",            placeholder: "No need to fix it, just name it…" },
+      { field: "carryForward",        label: "What would help you feel ready?",                 placeholder: "One small thing…" },
     ],
   },
 };
@@ -200,7 +221,7 @@ export default function Home() {
           onClick={saveEntry}
           disabled={message === "saving"}
         >
-          Save {config.label.toLowerCase()} to Notion
+          Save {config.label} to Notion
         </button>
       </div>
 
