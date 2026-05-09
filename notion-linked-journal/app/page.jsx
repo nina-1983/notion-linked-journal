@@ -2,86 +2,56 @@
 
 import { useState } from "react";
 
-const moods = ["Calm", "Clear", "Heavy", "Foggy", "Tender", "Grounded"];
-const states = ["Regulated", "Activated", "Dysregulated", "Foggy", "Overdriven"];
-const supports = ["walk", "protein breakfast", "silence", "movement", "journaling"];
-
 function todayIso() {
   return new Date().toISOString().slice(0, 10);
 }
 
-function PillGroup({ options, value, onChange }) {
-  return (
-    <div className="pills">
-      {options.map((option) => (
-        <button
-          key={option}
-          type="button"
-          className={value === option ? "pill active" : "pill"}
-          onClick={() => onChange(option)}
-        >
-          {option}
-        </button>
-      ))}
-    </div>
-  );
+function isWeekend() {
+  const day = new Date().getDay();
+  return day === 0 || day === 6;
 }
 
-function MultiPills({ options, values, onChange }) {
-  function toggle(option) {
-    if (values.includes(option)) {
-      onChange(values.filter((x) => x !== option));
-    } else {
-      onChange([...values, option]);
-    }
-  }
-
-  return (
-    <div className="pills">
-      {options.map((option) => (
-        <button
-          key={option}
-          type="button"
-          className={values.includes(option) ? "pill active" : "pill"}
-          onClick={() => toggle(option)}
-        >
-          {option}
-        </button>
-      ))}
-    </div>
-  );
-}
+const today = todayIso();
+const weekendMode = isWeekend();
 
 export default function Home() {
-  const [tab, setTab] = useState("morning");
+  const [mode, setMode] = useState("Morning");
   const [message, setMessage] = useState("");
 
-  const [morning, setMorning] = useState({
-    entryType: "Morning",
-    date: todayIso(),
+  const [entry, setEntry] = useState({
+    entryType: weekendMode ? "Weekend" : "Morning",
+    date: today,
     mood: "",
-    nervousSystemState: "",
     energyLevel: 5,
+    nervousSystemState: "",
     emotionalReflection: "",
     openLoops: "",
-    carryForward: "",
-    whatHelped: [],
-  });
-
-  const [evening, setEvening] = useState({
-    entryType: "Evening",
-    date: todayIso(),
-    mood: "",
-    nervousSystemState: "",
-    energyLevel: 5,
+    homeReflection: "",
+    businessReflection: "",
+    moneyReflection: "",
+    identityReflection: "",
+    eveningReflection: "",
     whatWorked: "",
     whatFeltHeavy: "",
-    eveningReflection: "",
     carryForward: "",
-    whatHelped: [],
   });
 
-  async function saveEntry(data) {
+  function update(field, value) {
+    setEntry((prev) => ({
+      ...prev,
+      [field]: value,
+    }));
+  }
+
+  function switchMode(nextMode) {
+    setMode(nextMode);
+    setEntry((prev) => ({
+      ...prev,
+      entryType: nextMode,
+    }));
+  }
+
+  async function saveEntry() {
     setMessage("Saving to Notion...");
 
     const res = await fetch("/api/journal/create", {
@@ -89,7 +59,7 @@ export default function Home() {
       headers: {
         "Content-Type": "application/json",
       },
-      body: JSON.stringify(data),
+      body: JSON.stringify(entry),
     });
 
     if (res.ok) {
@@ -102,155 +72,216 @@ export default function Home() {
   return (
     <main className="wrap">
       <section className="hero">
-        <p className="eyebrow">Nina’s Journal</p>
-        <h1>A calmer way to check in.</h1>
+        <p className="eyebrow">
+          {weekendMode ? "Weekend Reset" : "Nina’s Journal"}
+        </p>
+
+        <h1>
+          {weekendMode
+            ? "A softer place to land."
+            : "A calmer way to check in."}
+        </h1>
+
+        <p>
+          {weekendMode
+            ? "No pressure. Just notice what feels supportive, what needs softening, and what would help you reset."
+            : "A simple reflection space for clarity, calm, regulation and aligned growth."}
+        </p>
       </section>
 
-      <nav className="tabs">
-        <button className={tab === "morning" ? "active" : ""} onClick={() => setTab("morning")}>
-          Morning
-        </button>
-
-        <button className={tab === "evening" ? "active" : ""} onClick={() => setTab("evening")}>
-          Evening
-        </button>
-      </nav>
-
-      {message ? <div className="notice">{message}</div> : null}
-
-      {tab === "morning" ? (
-        <section className="panel">
-          <h2>Morning check-in</h2>
-
-          <label>
-            <span>How do I feel?</span>
-            <PillGroup
-              options={moods}
-              value={morning.mood}
-              onChange={(v) => setMorning({ ...morning, mood: v })}
-            />
-          </label>
-
-          <label>
-            <span>Nervous system</span>
-            <PillGroup
-              options={states}
-              value={morning.nervousSystemState}
-              onChange={(v) => setMorning({ ...morning, nervousSystemState: v })}
-            />
-          </label>
-
-          <label>
-            <span>Energy: {morning.energyLevel}/10</span>
-            <input
-              type="range"
-              min="1"
-              max="10"
-              value={morning.energyLevel}
-              onChange={(e) => setMorning({ ...morning, energyLevel: e.target.value })}
-            />
-          </label>
-
-          <label>
-            <span>What’s circling?</span>
-            <textarea
-              value={morning.openLoops}
-              onChange={(e) => setMorning({ ...morning, openLoops: e.target.value })}
-            />
-          </label>
-
-          <label>
-            <span>What do I need today?</span>
-            <textarea
-              value={morning.emotionalReflection}
-              onChange={(e) => setMorning({ ...morning, emotionalReflection: e.target.value })}
-            />
-          </label>
-
-          <label>
-            <span>Supports</span>
-            <MultiPills
-              options={supports}
-              values={morning.whatHelped}
-              onChange={(v) => setMorning({ ...morning, whatHelped: v })}
-            />
-          </label>
-
-          <button className="save" onClick={() => saveEntry(morning)}>
-            Save morning to Notion
+      {!weekendMode && (
+        <nav className="tabs">
+          <button
+            className={mode === "Morning" ? "active" : ""}
+            onClick={() => switchMode("Morning")}
+          >
+            Morning
           </button>
-        </section>
-      ) : (
-        <section className="panel">
-          <h2>Evening reflection</h2>
 
-          <label>
-            <span>How do I feel now?</span>
-            <PillGroup
-              options={moods}
-              value={evening.mood}
-              onChange={(v) => setEvening({ ...evening, mood: v })}
-            />
-          </label>
-
-          <label>
-            <span>Nervous system</span>
-            <PillGroup
-              options={states}
-              value={evening.nervousSystemState}
-              onChange={(v) => setEvening({ ...evening, nervousSystemState: v })}
-            />
-          </label>
-
-          <label>
-            <span>Energy: {evening.energyLevel}/10</span>
-            <input
-              type="range"
-              min="1"
-              max="10"
-              value={evening.energyLevel}
-              onChange={(e) => setEvening({ ...evening, energyLevel: e.target.value })}
-            />
-          </label>
-
-          <label>
-            <span>What worked?</span>
-            <textarea
-              value={evening.whatWorked}
-              onChange={(e) => setEvening({ ...evening, whatWorked: e.target.value })}
-            />
-          </label>
-
-          <label>
-            <span>What felt heavy?</span>
-            <textarea
-              value={evening.whatFeltHeavy}
-              onChange={(e) => setEvening({ ...evening, whatFeltHeavy: e.target.value })}
-            />
-          </label>
-
-          <label>
-            <span>What needs carrying forward?</span>
-            <textarea
-              value={evening.carryForward}
-              onChange={(e) => setEvening({ ...evening, carryForward: e.target.value })}
-            />
-          </label>
-
-          <label>
-            <span>Supports</span>
-            <MultiPills
-              options={supports}
-              values={evening.whatHelped}
-              onChange={(v) => setEvening({ ...evening, whatHelped: v })}
-            />
-          </label>
-
-          <button className="save" onClick={() => saveEntry(evening)}>
-            Save evening to Notion
+          <button
+            className={mode === "Evening" ? "active" : ""}
+            onClick={() => switchMode("Evening")}
+          >
+            Evening
           </button>
-        </section>
+        </nav>
       )}
+
+      {message && <div className="notice">{message}</div>}
+
+      <section className="panel">
+        {weekendMode ? (
+          <>
+            <h2>Weekend reset</h2>
+
+            <Field label="How do I actually feel today?">
+              <textarea
+                value={entry.emotionalReflection}
+                onChange={(e) =>
+                  update("emotionalReflection", e.target.value)
+                }
+              />
+            </Field>
+
+            <Field label="What does my nervous system need this weekend?">
+              <textarea
+                value={entry.nervousSystemState}
+                onChange={(e) =>
+                  update("nervousSystemState", e.target.value)
+                }
+              />
+            </Field>
+
+            <Field label="What would make home feel calmer?">
+              <textarea
+                value={entry.homeReflection}
+                onChange={(e) =>
+                  update("homeReflection", e.target.value)
+                }
+              />
+            </Field>
+
+            <Field label="What feels emotionally unfinished?">
+              <textarea
+                value={entry.openLoops}
+                onChange={(e) => update("openLoops", e.target.value)}
+              />
+            </Field>
+
+            <Field label="What do I want less of next week?">
+              <textarea
+                value={entry.whatFeltHeavy}
+                onChange={(e) =>
+                  update("whatFeltHeavy", e.target.value)
+                }
+              />
+            </Field>
+
+            <Field label="What would support me properly this week?">
+              <textarea
+                value={entry.carryForward}
+                onChange={(e) =>
+                  update("carryForward", e.target.value)
+                }
+              />
+            </Field>
+
+            <button className="save" onClick={saveEntry}>
+              Save weekend reset to Notion
+            </button>
+          </>
+        ) : mode === "Morning" ? (
+          <>
+            <h2>Morning check-in</h2>
+
+            <Field label="How do I actually feel today?">
+              <textarea
+                value={entry.emotionalReflection}
+                onChange={(e) =>
+                  update("emotionalReflection", e.target.value)
+                }
+              />
+            </Field>
+
+            <Field label="What feels heavy right now?">
+              <textarea
+                value={entry.whatFeltHeavy}
+                onChange={(e) =>
+                  update("whatFeltHeavy", e.target.value)
+                }
+              />
+            </Field>
+
+            <Field label="What feels supportive right now?">
+              <textarea
+                value={entry.whatWorked}
+                onChange={(e) => update("whatWorked", e.target.value)}
+              />
+            </Field>
+
+            <Field label="What do I need most today?">
+              <textarea
+                value={entry.carryForward}
+                onChange={(e) =>
+                  update("carryForward", e.target.value)
+                }
+              />
+            </Field>
+
+            <Field label={`Energy level: ${entry.energyLevel}/10`}>
+              <input
+                type="range"
+                min="1"
+                max="10"
+                value={entry.energyLevel}
+                onChange={(e) => update("energyLevel", e.target.value)}
+              />
+            </Field>
+
+            <button className="save" onClick={saveEntry}>
+              Save morning to Notion
+            </button>
+          </>
+        ) : (
+          <>
+            <h2>Evening reflection</h2>
+
+            <Field label="What worked today?">
+              <textarea
+                value={entry.whatWorked}
+                onChange={(e) => update("whatWorked", e.target.value)}
+              />
+            </Field>
+
+            <Field label="What felt hard today?">
+              <textarea
+                value={entry.whatFeltHeavy}
+                onChange={(e) =>
+                  update("whatFeltHeavy", e.target.value)
+                }
+              />
+            </Field>
+
+            <Field label="What drained me?">
+              <textarea
+                value={entry.openLoops}
+                onChange={(e) => update("openLoops", e.target.value)}
+              />
+            </Field>
+
+            <Field label="What regulated me?">
+              <textarea
+                value={entry.eveningReflection}
+                onChange={(e) =>
+                  update("eveningReflection", e.target.value)
+                }
+              />
+            </Field>
+
+            <Field label="What needs carrying forward?">
+              <textarea
+                value={entry.carryForward}
+                onChange={(e) =>
+                  update("carryForward", e.target.value)
+                }
+              />
+            </Field>
+
+            <button className="save" onClick={saveEntry}>
+              Save evening to Notion
+            </button>
+          </>
+        )}
+      </section>
     </main>
+  );
+}
+
+function Field({ label, children }) {
+  return (
+    <label className="field">
+      <span>{label}</span>
+      {children}
+    </label>
   );
 }
